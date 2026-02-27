@@ -61,12 +61,13 @@ export default function LoginPage() {
             </div>
             
             <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 rounded-md font-bold text-white bg-brand hover:opacity-90 transition-all disabled:bg-gray-400"
-            >
-              {loading ? 'Logging in...' : 'Sign In'}
-            </button>
+  type="submit"
+  disabled={loading}
+  // Hardcoded blue + shadow for guaranteed visibility
+  className="w-full py-3 px-4 rounded-md font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] shadow-md transition-all disabled:bg-gray-400 mt-4"
+>
+  {loading ? 'Logging in...' : 'Sign In'}
+</button>
           </form>
 
           <div className="mt-6 text-center">

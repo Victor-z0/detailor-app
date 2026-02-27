@@ -64,13 +64,13 @@ export default function SignUpPage() {
             </div>
             
             <button
-              type="submit"
-              disabled={loading}
-              // Uses @theme brand color from your globals.css
-              className="w-full py-3 px-4 rounded-md font-bold text-white bg-brand hover:opacity-90 transition-all disabled:bg-gray-400"
-            >
-              {loading ? 'Creating...' : 'Sign Up'}
-            </button>
+  type="submit"
+  disabled={loading}
+  // Hardcoded blue ensures visibility while we debug the CSS theme
+  className="w-full py-3 px-4 rounded-md font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] shadow-lg transition-all disabled:bg-gray-400"
+>
+  {loading ? 'Creating...' : 'Sign Up'}
+</button>
           </form>
           {message && <p className="mt-4 text-center text-sm">{message}</p>}
         </div>
