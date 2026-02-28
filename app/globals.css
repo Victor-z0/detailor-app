@@ -1,20 +1,18 @@
 @import "tailwindcss";
 
-:root {
-  /* Use --color-* to define custom colors */
+@theme {
+  /* This namespace (--color-*) tells Tailwind to create 'bg-brand', 'text-brand', etc. */
   --color-brand: #2563eb;
   --color-brand-hover: #1d4ed8;
   
-  /* You can also define fonts or other tokens here */
+  /* This creates 'font-sans' utilities */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Regular CSS variables for things that don't need utility classes */
 :root {
   --background: #ffffff;
   --foreground: #000000;
-  --color-brand: #2563eb;
-  --color-brand-hover: #1d4ed8;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
