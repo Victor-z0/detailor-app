@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import InviteContent from './InviteContent';
-
 export const dynamic = 'force-dynamic';
 
 export default function InvitePage() {
