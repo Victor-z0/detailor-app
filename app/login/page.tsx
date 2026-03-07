@@ -1,19 +1,37 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from "@/lib/supabase";
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { LogIn, Mail, Lock, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // 1. Auto-fill the email if they checked "Remember Me" previously
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('detailor_email');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // 2. Save or remove the email from local storage based on the checkbox
+    if (rememberMe) {
+      localStorage.setItem('detailor_email', email);
+    } else {
+      localStorage.removeItem('detailor_email');
+    }
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -23,60 +41,110 @@ export default function LoginPage() {
     if (error) {
       alert(error.message);
     } else {
-      // If login is successful, send them straight to the dashboard
       router.push('/dashboard');
     }
     setLoading(false);
   };
 
-  return (
-    <div className="min-h-screen bg-white flex flex-col justify-center py-12 px-6 text-black">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Welcome Back</h2>
-        <p className="mt-2 text-gray-600">Log in to manage your detailing shop</p>
-      </div>
+  const handleGoogleLogin = async () => {
+    // 3. OAuth inherently handles BOTH Sign Up and Log In automatically
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (error) alert(error.message);
+  };
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-gray-50 py-8 px-4 shadow rounded-xl border border-gray-200 sm:px-10">
-          <form className="space-y-6" onSubmit={handleLogin}>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                required
-                className="w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand outline-none transition-all"
-                onChange={(e) => setEmail(e.target.value)}
-              />
+  return (
+    <div className="min-h-screen bg-white flex items-center justify-center p-6 selection:bg-black selection:text-white">
+      <div className="w-full max-w-md space-y-12 animate-in fade-in zoom-in-95 duration-700">
+        
+        {/* BRANDING */}
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-black italic tracking-tighter lowercase">detailor.</h1>
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Welcome Back to the Shop</p>
+        </div>
+
+        <div className="space-y-8">
+          {/* GOOGLE AUTH BUTTON */}
+          <button 
+            onClick={handleGoogleLogin}
+            className="group w-full flex items-center justify-center gap-3 p-4 border border-gray-100 rounded-[2rem] font-bold text-sm lowercase italic tracking-tight hover:bg-black hover:text-white transition-all duration-300 shadow-sm"
+          >
+            <img src="https://www.google.com/favicon.ico" className="w-4 h-4 grayscale group-hover:grayscale-0 transition-all" alt="Google" />
+            login / signup with google
+          </button>
+
+          <div className="relative flex items-center justify-center">
+            <div className="w-full border-t border-gray-50"></div>
+            <span className="absolute bg-white px-4 text-[8px] font-black uppercase tracking-widest text-gray-300">or_use_email</span>
+          </div>
+
+          {/* EMAIL FORM */}
+          <form className="space-y-5" onSubmit={handleLogin}>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                <input
+                  type="email"
+                  value={email}
+                  placeholder="name@business.com"
+                  required
+                  className="w-full pl-14 pr-6 py-4 bg-gray-50 border-none rounded-[2rem] text-sm font-bold tracking-tight focus:ring-2 focus:ring-black outline-none transition-all placeholder:text-gray-200"
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                required
-                className="w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand outline-none transition-all"
-                onChange={(e) => setPassword(e.target.value)}
-              />
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                <input
+                  type="password"
+                  value={password}
+                  placeholder="••••••••"
+                  required
+                  className="w-full pl-14 pr-6 py-4 bg-gray-50 border-none rounded-[2rem] text-sm font-bold tracking-tight focus:ring-2 focus:ring-black outline-none transition-all placeholder:text-gray-200"
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
             </div>
-            
+
+            {/* REMEMBER ME CHECKBOX */}
+            <div className="flex items-center gap-3 px-4 pt-2">
+              <input 
+                type="checkbox" 
+                id="remember" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 accent-black rounded cursor-pointer"
+              />
+              <label htmlFor="remember" className="text-[10px] font-black uppercase tracking-widest text-gray-400 cursor-pointer select-none">
+                Remember Email
+              </label>
+            </div>
+
             <button
-  type="submit"
-  disabled={loading}
-  // Hardcoded blue + shadow for guaranteed visibility
-  className="w-full py-3 px-4 rounded-md font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] shadow-md transition-all disabled:bg-gray-400 mt-4"
->
-  {loading ? 'Logging in...' : 'Sign In'}
-</button>
+              type="submit"
+              disabled={loading}
+              className="w-full py-5 bg-black text-white rounded-[2.5rem] font-bold uppercase text-[10px] tracking-[0.3em] shadow-2xl shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:bg-gray-100 disabled:text-gray-400 flex items-center justify-center gap-2 mt-8"
+            >
+              {loading ? 'authenticating...' : <><LogIn size={14} /> sign_in</>}
+            </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link href="/signup" className="text-brand font-semibold hover:underline">
-                Sign up for free
-              </Link>
-            </p>
+          {/* FOOTER LINKS */}
+          <div className="text-center pt-4">
+            <Link 
+              href="/signup" 
+              className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black transition-colors flex items-center justify-center gap-2 group"
+            >
+              no_account? create_one <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </div>
       </div>
