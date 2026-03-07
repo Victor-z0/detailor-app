@@ -7,7 +7,7 @@ type Settings = {
   business_name: string;
   brand_color: string;
   currency_symbol: string;
-  tax_rate: number;
+  language: string; // 🌐 Added Language
 };
 
 const SettingsContext = createContext<Settings | undefined>(undefined);
@@ -17,7 +17,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     business_name: 'Studio',
     brand_color: '#000000',
     currency_symbol: '$',
-    tax_rate: 0,
+    language: 'en', // Default to English
   });
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('business_name, brand_color, currency_symbol, tax_rate')
+        .select('business_name, brand_color, currency_symbol, language')
         .eq('id', user.id)
         .single();
 
@@ -36,7 +36,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           business_name: profile.business_name || 'Studio',
           brand_color: profile.brand_color || '#000000',
           currency_symbol: profile.currency_symbol || '$',
-          tax_rate: profile.tax_rate || 0,
+          language: profile.language || 'en',
         });
       }
     }
