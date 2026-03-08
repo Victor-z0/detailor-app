@@ -1,5 +1,11 @@
-import DashboardShell from "@/components/DashboardShell";
+"use client";
+import { SettingsProvider } from '@/context/settingsContext';
+import DashboardShell from '@/components/DashboardShell';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return <DashboardShell>{children}</DashboardShell>;
+  return (
+    <SettingsProvider>
+      <DashboardShell>{children}</DashboardShell>
+    </SettingsProvider>
+  );
 }
