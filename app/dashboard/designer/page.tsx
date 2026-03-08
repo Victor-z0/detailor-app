@@ -161,9 +161,8 @@ export default function PageDesignerPage() {
     setUploading('logo'); setError('');
     try {
       const ext = file.name.split('.').pop();
-      const url = await uploadFile(file, `${userId}/avatar.${ext}`);
+      const url = await uploadFile(file, `${userId}/page-logo.${ext}`);
       set('logo_url', url);
-      await supabase.from('profiles').update({ logo_url: url, avatar_url: url }).eq('id', userId);
     } catch (err: any) { setError(`Logo upload failed: ${err.message}`); }
     setUploading(null);
     if (logoRef.current) logoRef.current.value = '';
@@ -174,9 +173,8 @@ export default function PageDesignerPage() {
     setUploading('cover'); setError('');
     try {
       const ext = file.name.split('.').pop();
-      const url = await uploadFile(file, `${userId}/cover.${ext}`);
+      const url = await uploadFile(file, `${userId}/page-cover.${ext}`);
       set('cover_url', url);
-      await supabase.from('profiles').update({ cover_url: url }).eq('id', userId);
     } catch (err: any) { setError(`Cover upload failed: ${err.message}`); }
     setUploading(null);
     if (coverRef.current) coverRef.current.value = '';
@@ -185,11 +183,11 @@ export default function PageDesignerPage() {
   async function handleSave() {
     if (!userId) return;
     setSaving(true); setError('');
+    // Page Designer ONLY saves page_config and theme_color
+    // Settings page controls avatar_url, cover_url, logo_url on the profile
     const { error } = await supabase.from('profiles').update({
       page_config: config,
       theme_color: config.theme_color,
-      cover_url:   config.cover_url,
-      logo_url:    config.logo_url,
     }).eq('id', userId);
     setSaving(false);
     if (error) setError(error.message);
@@ -254,16 +252,20 @@ export default function PageDesignerPage() {
             <div className="mb-4">
               <p className="text-xs font-semibold text-gray-500 mb-2">Logo / Avatar</p>
               <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-xl border border-gray-100 overflow-hidden bg-gray-50 flex-shrink-0">
+                <div onClick={() => logoRef.current?.click()}
+                  className="w-14 h-14 rounded-xl border border-gray-100 overflow-hidden bg-gray-50 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity relative group">
                   {config.logo_url
                     ? <img src={config.logo_url} className="w-full h-full object-cover" alt="logo" />
                     : <div className="w-full h-full flex items-center justify-center"><ImageIcon size={20} className="text-gray-300" /></div>
                   }
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+                    <Upload size={14} className="text-white" />
+                  </div>
                 </div>
                 <button onClick={() => logoRef.current?.click()} disabled={uploading === 'logo'}
                   className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-xl text-xs font-semibold text-gray-700 transition-colors">
                   {uploading === 'logo' ? <RefreshCw size={12} className="animate-spin" /> : <Upload size={12} />}
-                  {uploading === 'logo' ? 'Uploading...' : 'Change Logo'}
+                  {uploading === 'logo' ? 'Uploading...' : config.logo_url ? 'Replace Logo' : 'Upload Logo'}
                 </button>
                 <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
               </div>

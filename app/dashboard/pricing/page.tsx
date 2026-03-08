@@ -7,7 +7,7 @@ import { Check, X, Zap, Star, Crown, ArrowRight, TrendingUp, Lock } from 'lucide
 const PLAN_LEVEL: Record<string, number> = { essential: 1, choice: 2, exclusive: 3 };
 
 // ── Your test account email — bypasses all locks ─────────────────────
-const TEST_EMAIL = 'your@testemail.com'; // ← change this to your actual email
+const TEST_EMAIL = 'detailorapp@gmail.com';
 
 const PLANS = [
   {

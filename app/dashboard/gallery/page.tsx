@@ -58,7 +58,7 @@ export default function GalleryPage() {
     for (const file of files) {
       const isVideo = file.type.startsWith('video/');
       const ext  = file.name.split('.').pop();
-      const path = `gallery/${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `${userId}/gallery/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from('business-assets').upload(path, file, { upsert: true });
       if (upErr) {
@@ -214,7 +214,7 @@ export default function GalleryPage() {
 
       {/* GRID VIEW */}
       {!loading && filtered.length > 0 && view === 'grid' && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
           <button onClick={() => fileInputRef.current?.click()}
             className="aspect-square border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center hover:border-blue-300 hover:bg-blue-50/30 transition-all group">
             <Plus size={20} className="text-gray-300 group-hover:text-blue-400 mb-1" />
