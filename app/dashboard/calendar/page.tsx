@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import {
   ChevronLeft, ChevronRight, Plus, X, Clock, Trash2,
   AlertCircle, Phone, Car, CheckCircle2, DollarSign,
-  Briefcase, User, Calendar, List, Grid,
+  Briefcase, User, Calendar, List, Grid, RefreshCw,
 } from 'lucide-react';
 
 const STATUS_COLORS: Record<string, string> = {
