@@ -126,8 +126,16 @@ export default function SettingsPage() {
   }, []);
 
   async function uploadImage(file: File, path: string) {
-    const { error } = await supabase.storage.from('business-assets').upload(path, file, { upsert: true });
-    if (error) throw error;
+    const { data, error } = await supabase.storage.from('business-assets').upload(path, file, { upsert: true });
+    if (error) {
+      if (error.message.includes('row-level security') || error.message.includes('policy')) {
+        throw new Error('Storage permission denied. Go to Supabase → Storage → business-assets → Policies and add INSERT policy for authenticated users.');
+      }
+      if (error.message.includes('Bucket not found') || error.message.includes('bucket')) {
+        throw new Error('Bucket "business-assets" not found. Go to Supabase → Storage → New Bucket → name it "business-assets" → enable Public.');
+      }
+      throw error;
+    }
     const { data: { publicUrl } } = supabase.storage.from('business-assets').getPublicUrl(path);
     return publicUrl;
   }
@@ -233,26 +241,26 @@ export default function SettingsPage() {
     <div className="max-w-5xl mx-auto pb-16">
 
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Customize your public booking page</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Settings</h1>
+          <p className="text-sm text-gray-400 mt-0.5 hidden sm:block">Customize your public booking page</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {saved && (
             <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-semibold">
               <CheckCircle2 size={15} /> Saved!
             </span>
           )}
           <a href={bookingUrl} target="_blank"
-            className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl transition-colors border border-gray-100">
+            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl transition-colors border border-gray-100">
             <Eye size={14} /> Preview
           </a>
           <button onClick={handleSave} disabled={saving}
-            className="flex items-center gap-2 px-5 py-2 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm disabled:opacity-50"
             style={{ backgroundColor: form.theme_color }}>
             {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>
@@ -263,10 +271,22 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {/* MOBILE: horizontal scrolling tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 lg:hidden scrollbar-hide -mx-4 px-4">
+        {sections.map(s => (
+          <button key={s.id} onClick={() => setActiveSection(s.id)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-all"
+            style={activeSection === s.id ? { backgroundColor: form.theme_color, color: 'white' } : { backgroundColor: '#f9fafb', color: '#6b7280' }}>
+            <s.icon size={12} />
+            {s.label}
+          </button>
+        ))}
+      </div>
+
       <div className="flex gap-6">
 
-        {/* SIDEBAR */}
-        <div className="w-52 flex-shrink-0">
+        {/* SIDEBAR - desktop only */}
+        <div className="w-52 flex-shrink-0 hidden lg:block">
           <nav className="space-y-1 sticky top-20">
             {sections.map(s => (
               <button key={s.id} onClick={() => setActiveSection(s.id)}
@@ -280,7 +300,7 @@ export default function SettingsPage() {
         </div>
 
         {/* CONTENT */}
-        <div className="flex-1 space-y-5 min-w-0">
+        <div className="flex-1 space-y-5 min-w-0 w-full">
 
           {/* BUSINESS INFO */}
           {activeSection === 'business' && (

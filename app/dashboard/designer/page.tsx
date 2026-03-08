@@ -1,415 +1,528 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useSettings } from '@/context/settingsContext';
 import {
-  Eye, Save, RefreshCw, CheckCircle2, AlertCircle,
-  Layout, Type, Image, Star, Clock, Phone,
-  ChevronUp, ChevronDown, ToggleLeft, GripVertical,
-  Palette, Monitor, Smartphone, ExternalLink,
-  CheckSquare, Square, Layers
+  Save, RefreshCw, ExternalLink, AlertCircle, CheckCircle2,
+  Monitor, Smartphone, Pencil, Image as ImageIcon,
+  X, Upload, Check,
 } from 'lucide-react';
 
-// All possible sections on the public booking page
-const ALL_SECTIONS = [
-  { id: 'hero',         label: 'Hero Banner',       desc: 'Cover photo + business name',        icon: Image   },
-  { id: 'about',        label: 'About / Bio',        desc: 'Your business description',          icon: Type    },
-  { id: 'services',     label: 'Services Menu',      desc: 'List of services with prices',       icon: Star    },
-  { id: 'gallery',      label: 'Photo Gallery',      desc: 'Lookbook / portfolio photos',        icon: Image   },
-  { id: 'hours',        label: 'Business Hours',     desc: 'Weekly availability schedule',       icon: Clock   },
-  { id: 'contact',      label: 'Contact Info',       desc: 'Phone, location, socials',           icon: Phone   },
-  { id: 'booking',      label: 'Booking Form',       desc: 'Date/time/service selector',         icon: Layout  },
-  { id: 'reviews',      label: 'Reviews',            desc: 'Star ratings from clients',          icon: Star    },
-];
-
-const FONT_OPTIONS = [
-  { id: 'inter',    label: 'Inter',         preview: 'Modern & Clean'    },
-  { id: 'poppins',  label: 'Poppins',       preview: 'Rounded & Friendly' },
-  { id: 'playfair', label: 'Playfair',      preview: 'Elegant & Luxury'  },
-  { id: 'mono',     label: 'Monospace',     preview: 'Technical & Bold'  },
-];
-
-const LAYOUT_OPTIONS = [
-  { id: 'classic',   label: 'Classic',    desc: 'Centered, clean layout'       },
-  { id: 'bold',      label: 'Bold',       desc: 'Full-width hero, big text'     },
-  { id: 'minimal',   label: 'Minimal',    desc: 'Less is more, whitespace heavy' },
-  { id: 'card',      label: 'Card',       desc: 'Content in floating cards'     },
-];
-
-type PageConfig = {
-  layout:           string;
-  font:             string;
+interface PageConfig {
+  hero_headline:    string;
+  hero_subheadline: string;
+  hero_cta_text:    string;
+  hero_cta_color:   string;
+  hero_style:       'cover' | 'gradient' | 'minimal';
+  show_about:       boolean;
+  about_title:      string;
+  show_services:    boolean;
+  services_title:   string;
+  show_gallery:     boolean;
+  gallery_title:    string;
+  show_contact:     boolean;
+  logo_url:         string;
+  cover_url:        string;
   theme_color:      string;
+  font_style:       'modern' | 'classic' | 'bold';
   dark_mode:        boolean;
-  section_order:    string[];
-  hidden_sections:  string[];
-  hero_style:       string;  // 'cover' | 'gradient' | 'minimal'
-  show_badge:       boolean; // "Powered by Detailor" badge
+  show_powered_by:  boolean;
+}
+
+const DEFAULTS: PageConfig = {
+  hero_headline:    'Book Your Detail Today',
+  hero_subheadline: 'Premium auto detailing. Easy online booking. Fast results.',
+  hero_cta_text:    'Book Now',
+  hero_cta_color:   '#2563eb',
+  hero_style:       'cover',
+  show_about:       true,
+  about_title:      'About Us',
+  show_services:    true,
+  services_title:   'Our Services',
+  show_gallery:     true,
+  gallery_title:    'Our Work',
+  show_contact:     true,
+  logo_url:         '',
+  cover_url:        '',
+  theme_color:      '#2563eb',
+  font_style:       'modern',
+  dark_mode:        false,
+  show_powered_by:  true,
 };
 
-const DEFAULT_CONFIG: PageConfig = {
-  layout:          'classic',
-  font:            'inter',
-  theme_color:     '#2563eb',
-  dark_mode:       false,
-  section_order:   ALL_SECTIONS.map(s => s.id),
-  hidden_sections: ['reviews'],
-  hero_style:      'cover',
-  show_badge:      true,
-};
+function EditPopover({ label, value, onSave, onClose, multiline = false }: {
+  label: string; value: string; onSave: (v: string) => void;
+  onClose: () => void; multiline?: boolean;
+}) {
+  const [val, setVal] = useState(value);
+  return (
+    <div className="absolute z-50 top-full left-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-2xl p-4 w-72">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{label}</span>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
+      </div>
+      {multiline
+        ? <textarea className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} value={val} onChange={e => setVal(e.target.value)} autoFocus />
+        : <input className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" value={val} onChange={e => setVal(e.target.value)} autoFocus />
+      }
+      <div className="flex gap-2 mt-3">
+        <button onClick={onClose} className="flex-1 py-1.5 text-xs font-semibold text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">Cancel</button>
+        <button onClick={() => { onSave(val); onClose(); }} className="flex-1 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-1">
+          <Check size={12} /> Apply
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Editable({ label, value, onChange, children, multiline = false }: {
+  label: string; value: string; onChange: (v: string) => void;
+  children: React.ReactNode; multiline?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+  return (
+    <div ref={ref} className="relative group/edit inline-block">
+      <div className="relative cursor-pointer" onClick={() => setOpen(true)}>
+        {children}
+        <span className="absolute -top-1 -right-1 opacity-0 group-hover/edit:opacity-100 transition-opacity bg-blue-600 text-white rounded-full p-0.5 shadow-md pointer-events-none z-10">
+          <Pencil size={9} />
+        </span>
+        <div className="absolute inset-0 opacity-0 group-hover/edit:opacity-100 transition-opacity border-2 border-dashed border-blue-400 rounded-lg pointer-events-none" />
+      </div>
+      {open && <EditPopover label={label} value={value} onSave={onChange} onClose={() => setOpen(false)} multiline={multiline} />}
+    </div>
+  );
+}
+
+function Toggle({ enabled, onToggle, color }: { enabled: boolean; onToggle: () => void; color: string }) {
+  return (
+    <button onClick={onToggle} className="relative w-10 h-5 rounded-full transition-colors flex-shrink-0"
+      style={{ backgroundColor: enabled ? color : '#e5e7eb' }}>
+      <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+    </button>
+  );
+}
 
 export default function PageDesignerPage() {
-  const { settings, reload } = useSettings();
-  const [userId,   setUserId]   = useState('');
-  const [slug,     setSlug]     = useState('');
-  const [loading,  setLoading]  = useState(true);
-  const [saving,   setSaving]   = useState(false);
-  const [saved,    setSaved]    = useState(false);
-  const [error,    setError]    = useState('');
-  const [preview,  setPreview]  = useState<'desktop' | 'mobile'>('desktop');
-  const [config,   setConfig]   = useState<PageConfig>(DEFAULT_CONFIG);
+  const [config,    setConfig]   = useState<PageConfig>(DEFAULTS);
+  const [slug,      setSlug]     = useState('');
+  const [userId,    setUserId]   = useState('');
+  const [saving,    setSaving]   = useState(false);
+  const [saved,     setSaved]    = useState(false);
+  const [error,     setError]    = useState('');
+  const [device,    setDevice]   = useState<'desktop' | 'mobile'>('desktop');
+  const [uploading, setUploading] = useState<'logo' | 'cover' | null>(null);
+  const logoRef  = useRef<HTMLInputElement>(null);
+  const coverRef = useRef<HTMLInputElement>(null);
+
+  const bookingUrl = slug ? `${typeof window !== 'undefined' ? window.location.origin : ''}/${slug}` : '';
+
+  function set<K extends keyof PageConfig>(key: K, value: PageConfig[K]) {
+    setConfig(c => ({ ...c, [key]: value }));
+  }
 
   useEffect(() => {
-    async function load() {
+    (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
       const { data } = await supabase.from('profiles')
-        .select('slug, theme_color, page_config')
+        .select('slug, page_config, theme_color, cover_url, logo_url, avatar_url')
         .eq('id', user.id).single();
       if (data) {
-        setSlug(data.slug || '');
-        const base = { ...DEFAULT_CONFIG, theme_color: data.theme_color || DEFAULT_CONFIG.theme_color };
-        if (data.page_config) {
-          try { setConfig({ ...base, ...JSON.parse(data.page_config) }); }
-          catch { setConfig(base); }
-        } else {
-          setConfig(base);
-        }
+        setSlug(data.slug ?? '');
+        const saved = data.page_config as Partial<PageConfig> | null;
+        setConfig({
+          ...DEFAULTS,
+          theme_color:    data.theme_color ?? DEFAULTS.theme_color,
+          hero_cta_color: data.theme_color ?? DEFAULTS.hero_cta_color,
+          cover_url:      data.cover_url  ?? '',
+          logo_url:       data.logo_url   ?? data.avatar_url ?? '',
+          ...(saved ?? {}),
+        });
       }
-      setLoading(false);
-    }
-    load();
+    })();
   }, []);
+
+  async function uploadFile(file: File, path: string) {
+    const { error } = await supabase.storage.from('business-assets').upload(path, file, { upsert: true });
+    if (error) throw error;
+    return supabase.storage.from('business-assets').getPublicUrl(path).data.publicUrl;
+  }
+
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (!file || !userId) return;
+    setUploading('logo'); setError('');
+    try {
+      const ext = file.name.split('.').pop();
+      const url = await uploadFile(file, `${userId}/avatar.${ext}`);
+      set('logo_url', url);
+      await supabase.from('profiles').update({ logo_url: url, avatar_url: url }).eq('id', userId);
+    } catch (err: any) { setError(`Logo upload failed: ${err.message}`); }
+    setUploading(null);
+    if (logoRef.current) logoRef.current.value = '';
+  }
+
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (!file || !userId) return;
+    setUploading('cover'); setError('');
+    try {
+      const ext = file.name.split('.').pop();
+      const url = await uploadFile(file, `${userId}/cover.${ext}`);
+      set('cover_url', url);
+      await supabase.from('profiles').update({ cover_url: url }).eq('id', userId);
+    } catch (err: any) { setError(`Cover upload failed: ${err.message}`); }
+    setUploading(null);
+    if (coverRef.current) coverRef.current.value = '';
+  }
 
   async function handleSave() {
     if (!userId) return;
-    setSaving(true);
-    setError('');
+    setSaving(true); setError('');
     const { error } = await supabase.from('profiles').update({
+      page_config: config,
       theme_color: config.theme_color,
-      page_config: JSON.stringify(config),
+      cover_url:   config.cover_url,
+      logo_url:    config.logo_url,
     }).eq('id', userId);
-    if (error) setError(error.message);
-    else { setSaved(true); setTimeout(() => setSaved(false), 3000); reload(); }
     setSaving(false);
+    if (error) setError(error.message);
+    else { setSaved(true); setTimeout(() => setSaved(false), 3000); }
   }
 
-  function moveSection(id: string, dir: 'up' | 'down') {
-    setConfig(c => {
-      const arr = [...c.section_order];
-      const i = arr.indexOf(id);
-      if (dir === 'up' && i > 0) [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
-      if (dir === 'down' && i < arr.length - 1) [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
-      return { ...c, section_order: arr };
-    });
-  }
-
-  function toggleSection(id: string) {
-    setConfig(c => {
-      const hidden = c.hidden_sections.includes(id)
-        ? c.hidden_sections.filter(s => s !== id)
-        : [...c.hidden_sections, id];
-      return { ...c, hidden_sections: hidden };
-    });
-  }
-
-  const visibleSections = config.section_order.filter(id => !config.hidden_sections.includes(id));
-  const bookingUrl = typeof window !== 'undefined' ? `${window.location.origin}/${slug}` : `/${slug}`;
-
-  if (loading) return (
-    <div className="flex items-center justify-center py-32">
-      <div className="w-7 h-7 border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin" />
-    </div>
-  );
+  const dark = config.dark_mode;
+  const textPrimary   = dark ? 'text-white'     : 'text-gray-900';
+  const textSecondary = dark ? 'text-white/50'  : 'text-gray-500';
+  const borderColor   = dark ? 'border-white/5' : 'border-gray-100';
+  const bgSection     = dark ? 'bg-white/5'     : 'bg-gray-50';
 
   return (
-    <div className="max-w-6xl mx-auto pb-20">
+    <div className="max-w-7xl mx-auto pb-20">
 
-      {/* Header */}
+      {/* HEADER */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Page Designer</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Customize how your public booking page looks to clients</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Page Designer</h1>
+          <p className="text-sm text-gray-400 mt-0.5 hidden sm:block">
+            Customize your <strong>client booking page</strong> — click any element in the preview to edit
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          {saved && (
-            <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-semibold">
-              <CheckCircle2 size={15} /> Saved!
-            </span>
+        <div className="flex items-center gap-2">
+          {saved && <span className="hidden sm:flex items-center gap-1.5 text-sm text-emerald-600 font-semibold"><CheckCircle2 size={15} /> Published!</span>}
+          {bookingUrl && (
+            <a href={bookingUrl} target="_blank" className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl border border-gray-100 transition-colors">
+              <ExternalLink size={14} /> View Live
+            </a>
           )}
-          <a href={bookingUrl} target="_blank"
-            className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl border border-gray-100 transition-colors">
-            <ExternalLink size={14} /> Live Page
-          </a>
           <button onClick={handleSave} disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl shadow-sm disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-white text-sm font-bold rounded-xl shadow-sm disabled:opacity-50 transition-colors"
             style={{ backgroundColor: config.theme_color }}>
             {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
-            {saving ? 'Saving...' : 'Publish Changes'}
+            {saving ? 'Saving...' : 'Publish'}
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 mb-5">
-          <AlertCircle size={15} /> {error}
-          <p className="text-xs mt-0.5 text-red-400">Run migration-v2.sql in Supabase to add the page_config column.</p>
+        <div className="flex items-start gap-2 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 mb-5">
+          <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold mb-1">Upload Error</p>
+            <p>{error}</p>
+            <p className="mt-2 text-xs text-red-500">
+              Go to Supabase → Storage → business-assets → Policies → Add INSERT policy for authenticated users with definition: <code>(auth.uid()::text = (storage.foldername(name))[1])</code>
+            </p>
+          </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
 
-        {/* LEFT: Controls */}
-        <div className="space-y-5">
+        {/* ─── LEFT: Controls ─── */}
+        <div className="space-y-4 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:pr-1">
 
-          {/* Layout */}
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-2">
-              <Layers size={14} className="text-gray-400" />
-              <h2 className="font-bold text-gray-900 text-sm">Layout Style</h2>
-            </div>
-            <div className="p-4 grid grid-cols-2 gap-2">
-              {LAYOUT_OPTIONS.map(l => (
-                <button key={l.id} onClick={() => setConfig(c => ({ ...c, layout: l.id }))}
-                  className={`p-3 rounded-xl border-2 text-left transition-all ${config.layout === l.id ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-gray-200'}`}
-                  style={config.layout === l.id ? { borderColor: config.theme_color, backgroundColor: `${config.theme_color}10` } : {}}>
-                  <p className={`text-xs font-bold ${config.layout === l.id ? 'text-blue-600' : 'text-gray-700'}`}
-                    style={config.layout === l.id ? { color: config.theme_color } : {}}>{l.label}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">{l.desc}</p>
+          {/* Branding */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Branding</p>
+
+            <div className="mb-4">
+              <p className="text-xs font-semibold text-gray-500 mb-2">Logo / Avatar</p>
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-14 rounded-xl border border-gray-100 overflow-hidden bg-gray-50 flex-shrink-0">
+                  {config.logo_url
+                    ? <img src={config.logo_url} className="w-full h-full object-cover" alt="logo" />
+                    : <div className="w-full h-full flex items-center justify-center"><ImageIcon size={20} className="text-gray-300" /></div>
+                  }
+                </div>
+                <button onClick={() => logoRef.current?.click()} disabled={uploading === 'logo'}
+                  className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-xl text-xs font-semibold text-gray-700 transition-colors">
+                  {uploading === 'logo' ? <RefreshCw size={12} className="animate-spin" /> : <Upload size={12} />}
+                  {uploading === 'logo' ? 'Uploading...' : 'Change Logo'}
                 </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Theme Color */}
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-2">
-              <Palette size={14} className="text-gray-400" />
-              <h2 className="font-bold text-gray-900 text-sm">Brand Color</h2>
-            </div>
-            <div className="p-4">
-              <div className="flex flex-wrap gap-2 mb-3">
-                {['#2563eb','#7c3aed','#e11d48','#ea580c','#059669','#0891b2','#111111','#475569'].map(c => (
-                  <button key={c} onClick={() => setConfig(cfg => ({ ...cfg, theme_color: c }))}
-                    className="w-8 h-8 rounded-xl transition-all hover:scale-110 relative shadow-sm flex-shrink-0"
-                    style={{ backgroundColor: c }}>
-                    {config.theme_color === c && <CheckCircle2 size={14} className="text-white absolute inset-0 m-auto drop-shadow" />}
-                  </button>
-                ))}
+                <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
               </div>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-xs font-semibold text-gray-500 mb-2">Cover / Hero Image</p>
+              <div onClick={() => coverRef.current?.click()}
+                className="relative h-24 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 cursor-pointer hover:opacity-90 transition-opacity group">
+                {config.cover_url
+                  ? <img src={config.cover_url} className="w-full h-full object-cover" alt="cover" />
+                  : <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
+                      <ImageIcon size={20} className="mb-1" /><span className="text-xs">Click to upload</span>
+                    </div>
+                }
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  {uploading === 'cover' ? <RefreshCw size={18} className="text-white animate-spin" /> : <Upload size={18} className="text-white" />}
+                </div>
+              </div>
+              <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold text-gray-500 mb-2">Brand Color</p>
               <div className="flex items-center gap-3">
                 <input type="color" value={config.theme_color}
-                  onChange={e => setConfig(c => ({ ...c, theme_color: e.target.value }))}
-                  className="w-9 h-9 rounded-lg cursor-pointer border border-gray-100 p-0.5" />
-                <span className="text-xs font-mono text-gray-500">{config.theme_color}</span>
-                <div className="ml-auto text-[10px] font-bold text-white px-2.5 py-1 rounded-lg"
-                  style={{ backgroundColor: config.theme_color }}>Preview</div>
+                  onChange={e => { set('theme_color', e.target.value); set('hero_cta_color', e.target.value); }}
+                  className="w-10 h-10 rounded-xl cursor-pointer border border-gray-100 p-0.5" />
+                <span className="text-sm font-mono text-gray-600">{config.theme_color}</span>
               </div>
             </div>
           </div>
 
-          {/* Font */}
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-2">
-              <Type size={14} className="text-gray-400" />
-              <h2 className="font-bold text-gray-900 text-sm">Font Style</h2>
-            </div>
-            <div className="p-4 space-y-2">
-              {FONT_OPTIONS.map(f => (
-                <button key={f.id} onClick={() => setConfig(c => ({ ...c, font: f.id }))}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border-2 transition-all ${config.font === f.id ? 'border-blue-500' : 'border-gray-100 hover:border-gray-200'}`}
-                  style={config.font === f.id ? { borderColor: config.theme_color } : {}}>
-                  <span className="text-sm font-semibold text-gray-800">{f.label}</span>
-                  <span className="text-xs text-gray-400">{f.preview}</span>
-                </button>
-              ))}
+          {/* Hero */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Hero Section</p>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 mb-1.5">Hero Style</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['cover', 'gradient', 'minimal'] as const).map(s => (
+                    <button key={s} onClick={() => set('hero_style', s)}
+                      className="py-2 text-xs font-semibold rounded-xl capitalize transition-all"
+                      style={{ backgroundColor: config.hero_style === s ? config.theme_color : '#f9fafb', color: config.hero_style === s ? '#fff' : '#6b7280' }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 mb-1.5">Headline</p>
+                <input value={config.hero_headline} onChange={e => set('hero_headline', e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 mb-1.5">Subheadline</p>
+                <textarea value={config.hero_subheadline} onChange={e => set('hero_subheadline', e.target.value)} rows={2}
+                  className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 mb-1.5">Button Text</p>
+                  <input value={config.hero_cta_text} onChange={e => set('hero_cta_text', e.target.value)}
+                    className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 mb-1.5">Button Color</p>
+                  <input type="color" value={config.hero_cta_color} onChange={e => set('hero_cta_color', e.target.value)}
+                    className="w-full h-9 rounded-xl cursor-pointer border border-gray-100 p-0.5" />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Hero Style */}
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-2">
-              <Image size={14} className="text-gray-400" />
-              <h2 className="font-bold text-gray-900 text-sm">Hero Style</h2>
-            </div>
-            <div className="p-4 space-y-2">
+          {/* Sections */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Page Sections</p>
+            <div className="space-y-1">
               {[
-                { id: 'cover',    label: 'Cover Photo',  desc: 'Full-width image banner' },
-                { id: 'gradient', label: 'Gradient',     desc: 'Color gradient using brand color' },
-                { id: 'minimal',  label: 'Minimal',      desc: 'Just name and tagline, no image' },
-              ].map(h => (
-                <button key={h.id} onClick={() => setConfig(c => ({ ...c, hero_style: h.id }))}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border-2 transition-all ${config.hero_style === h.id ? 'border-blue-500' : 'border-gray-100 hover:border-gray-200'}`}
-                  style={config.hero_style === h.id ? { borderColor: config.theme_color } : {}}>
-                  <span className="text-sm font-semibold text-gray-800">{h.label}</span>
-                  <span className="text-xs text-gray-400">{h.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Misc toggles */}
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-50">
-              <h2 className="font-bold text-gray-900 text-sm">Other Options</h2>
-            </div>
-            <div className="p-4 space-y-3">
-              {[
-                { key: 'dark_mode',   label: 'Dark Mode Page',        desc: 'Dark background for your booking page' },
-                { key: 'show_badge',  label: 'Show "Powered by" Badge', desc: 'Small Detailor badge in footer' },
-              ].map(opt => (
-                <div key={opt.key} className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">{opt.label}</p>
-                    <p className="text-xs text-gray-400">{opt.desc}</p>
-                  </div>
-                  <button onClick={() => setConfig(c => ({ ...c, [opt.key]: !(c as any)[opt.key] }))}
-                    className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${(config as any)[opt.key] ? 'bg-blue-600' : 'bg-gray-200'}`}
-                    style={(config as any)[opt.key] ? { backgroundColor: config.theme_color } : {}}>
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${(config as any)[opt.key] ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                  </button>
+                { label: 'About / Bio',  key: 'show_about'    as const },
+                { label: 'Services',     key: 'show_services' as const },
+                { label: 'Gallery',      key: 'show_gallery'  as const },
+                { label: 'Contact Info', key: 'show_contact'  as const },
+              ].map(({ label, key }) => (
+                <div key={key} className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-gray-50">
+                  <span className="text-sm font-medium text-gray-700">{label}</span>
+                  <Toggle enabled={config[key] as boolean} onToggle={() => set(key, !config[key] as any)} color={config.theme_color} />
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Style */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Style</p>
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 mb-2">Font Style</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['modern', 'classic', 'bold'] as const).map(f => (
+                    <button key={f} onClick={() => set('font_style', f)}
+                      className="py-2 text-xs font-semibold rounded-xl capitalize transition-all"
+                      style={{ backgroundColor: config.font_style === f ? config.theme_color : '#f9fafb', color: config.font_style === f ? '#fff' : '#6b7280' }}>
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Dark Mode</p>
+                  <p className="text-xs text-gray-400">Dark background for booking page</p>
+                </div>
+                <Toggle enabled={config.dark_mode} onToggle={() => set('dark_mode', !config.dark_mode)} color="#111827" />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">"Powered by Detailor"</p>
+                  <p className="text-xs text-gray-400">Badge at bottom of your page</p>
+                </div>
+                <Toggle enabled={config.show_powered_by} onToggle={() => set('show_powered_by', !config.show_powered_by)} color={config.theme_color} />
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* RIGHT: Section order + preview */}
-        <div className="space-y-5">
-
-          {/* Section Manager */}
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Layout size={14} className="text-gray-400" />
-                <h2 className="font-bold text-gray-900 text-sm">Page Sections</h2>
-              </div>
-              <p className="text-xs text-gray-400">{visibleSections.length} visible · drag to reorder</p>
+        {/* ─── RIGHT: Preview ─── */}
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+              <button onClick={() => setDevice('desktop')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={{ backgroundColor: device === 'desktop' ? '#fff' : 'transparent', color: device === 'desktop' ? '#111827' : '#9ca3af', boxShadow: device === 'desktop' ? '0 1px 2px rgba(0,0,0,.1)' : 'none' }}>
+                <Monitor size={13} /> Desktop
+              </button>
+              <button onClick={() => setDevice('mobile')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={{ backgroundColor: device === 'mobile' ? '#fff' : 'transparent', color: device === 'mobile' ? '#111827' : '#9ca3af', boxShadow: device === 'mobile' ? '0 1px 2px rgba(0,0,0,.1)' : 'none' }}>
+                <Smartphone size={13} /> Mobile
+              </button>
             </div>
-            <div className="p-4 space-y-2">
-              {config.section_order.map((id, idx) => {
-                const section = ALL_SECTIONS.find(s => s.id === id);
-                if (!section) return null;
-                const isVisible = !config.hidden_sections.includes(id);
-                const Icon = section.icon;
-                return (
-                  <div key={id} className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${isVisible ? 'bg-white border-gray-100' : 'bg-gray-50 border-gray-100 opacity-60'}`}>
-                    <GripVertical size={14} className="text-gray-300 flex-shrink-0 cursor-grab" />
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isVisible ? 'text-white' : 'bg-gray-200 text-gray-400'}`}
-                      style={isVisible ? { backgroundColor: config.theme_color } : {}}>
-                      <Icon size={14} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800">{section.label}</p>
-                      <p className="text-xs text-gray-400 truncate">{section.desc}</p>
-                    </div>
-                    {/* Up/down */}
-                    <div className="flex flex-col gap-0.5">
-                      <button onClick={() => moveSection(id, 'up')} disabled={idx === 0}
-                        className="p-1 hover:bg-gray-100 rounded disabled:opacity-20 transition-colors">
-                        <ChevronUp size={12} className="text-gray-500" />
-                      </button>
-                      <button onClick={() => moveSection(id, 'down')} disabled={idx === config.section_order.length - 1}
-                        className="p-1 hover:bg-gray-100 rounded disabled:opacity-20 transition-colors">
-                        <ChevronDown size={12} className="text-gray-500" />
-                      </button>
-                    </div>
-                    {/* Toggle visibility */}
-                    <button onClick={() => toggleSection(id)}
-                      className={`p-2 rounded-lg transition-colors text-xs font-bold ${isVisible ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}>
-                      {isVisible ? <CheckSquare size={14} /> : <Square size={14} />}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+            <p className="text-xs text-gray-400 ml-1 hidden sm:block">
+              <Pencil size={11} className="inline mr-1 mb-0.5" />
+              Click any element in the preview to edit
+            </p>
           </div>
 
-          {/* Mini Preview */}
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Eye size={14} className="text-gray-400" />
-                <h2 className="font-bold text-gray-900 text-sm">Preview</h2>
-              </div>
-              <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
-                <button onClick={() => setPreview('desktop')}
-                  className={`p-1.5 rounded-md transition-colors ${preview === 'desktop' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}>
-                  <Monitor size={13} className="text-gray-600" />
-                </button>
-                <button onClick={() => setPreview('mobile')}
-                  className={`p-1.5 rounded-md transition-colors ${preview === 'mobile' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}>
-                  <Smartphone size={13} className="text-gray-600" />
-                </button>
-              </div>
-            </div>
-            <div className="p-4 flex justify-center bg-gray-50">
-              <div className={`transition-all duration-300 ${preview === 'mobile' ? 'w-48' : 'w-full'}`}>
-                <div className={`rounded-xl overflow-hidden border border-gray-200 shadow-sm ${config.dark_mode ? 'bg-gray-900' : 'bg-white'}`}
-                  style={{ minHeight: 280 }}>
-                  {/* Hero preview */}
-                  <div className="h-24 flex items-end px-4 pb-3 relative overflow-hidden"
-                    style={{
-                      background: config.hero_style === 'gradient'
-                        ? `linear-gradient(135deg, ${config.theme_color}, ${config.theme_color}88)`
-                        : config.hero_style === 'minimal'
-                        ? config.dark_mode ? '#111' : '#f9fafb'
-                        : `linear-gradient(to bottom, ${config.theme_color}44, ${config.theme_color}88)`,
-                    }}>
-                    <div>
-                      <div className={`text-xs font-black ${config.hero_style === 'minimal' && !config.dark_mode ? 'text-gray-900' : 'text-white'}`}>
-                        Your Business
-                      </div>
-                      <div className={`text-[8px] mt-0.5 ${config.hero_style === 'minimal' && !config.dark_mode ? 'text-gray-500' : 'text-white/70'}`}>
-                        Premium Detailing Services
-                      </div>
+          <div className="flex justify-center">
+            <div className={`transition-all duration-300 border border-gray-200 rounded-2xl overflow-hidden shadow-xl ${device === 'mobile' ? 'w-[375px]' : 'w-full'}`}
+              style={{ backgroundColor: dark ? '#0f172a' : '#ffffff', minHeight: 600 }}>
+
+              {/* Hero */}
+              <div className="relative overflow-hidden" style={{
+                minHeight: 240,
+                background: config.hero_style === 'gradient'
+                  ? `linear-gradient(135deg, ${config.theme_color}, ${config.theme_color}99)`
+                  : config.hero_style === 'minimal'
+                  ? dark ? '#1e293b' : '#f8fafc'
+                  : config.cover_url
+                  ? `url(${config.cover_url}) center/cover no-repeat`
+                  : `linear-gradient(135deg, ${config.theme_color}33, ${config.theme_color}55)`,
+              }}>
+                {config.hero_style === 'cover' && config.cover_url && <div className="absolute inset-0 bg-black/40" />}
+                <div className="relative z-10 flex flex-col items-center justify-center text-center p-8 min-h-[240px] gap-3">
+
+                  {/* Logo */}
+                  {config.logo_url
+                    ? <Editable label="Logo" value={config.logo_url} onChange={v => set('logo_url', v)}>
+                        <img src={config.logo_url} className="w-14 h-14 rounded-full object-cover border-2 border-white/30 shadow-md" alt="logo" />
+                      </Editable>
+                    : <button onClick={() => logoRef.current?.click()}
+                        className="w-12 h-12 rounded-full bg-white/20 border-2 border-dashed border-white/40 flex items-center justify-center hover:bg-white/30 transition-colors group">
+                        <Upload size={14} className={config.hero_style === 'minimal' && !dark ? 'text-gray-400' : 'text-white/60'} />
+                      </button>
+                  }
+
+                  {/* Headline */}
+                  <Editable label="Headline" value={config.hero_headline} onChange={v => set('hero_headline', v)}>
+                    <h1 className={`text-2xl font-black leading-tight ${config.hero_style === 'minimal' && !dark ? 'text-gray-900' : 'text-white'} ${config.font_style === 'bold' ? 'uppercase tracking-tight' : ''}`}>
+                      {config.hero_headline}
+                    </h1>
+                  </Editable>
+
+                  {/* Subheadline */}
+                  <Editable label="Subheadline" value={config.hero_subheadline} onChange={v => set('hero_subheadline', v)} multiline>
+                    <p className={`text-sm max-w-sm ${config.hero_style === 'minimal' && !dark ? 'text-gray-500' : 'text-white/80'}`}>
+                      {config.hero_subheadline}
+                    </p>
+                  </Editable>
+
+                  {/* CTA Button */}
+                  <Editable label="Button Text" value={config.hero_cta_text} onChange={v => set('hero_cta_text', v)}>
+                    <div className="px-6 py-2.5 rounded-xl text-white text-sm font-bold shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                      style={{ backgroundColor: config.hero_cta_color }}>
+                      {config.hero_cta_text}
                     </div>
-                  </div>
-                  {/* Section previews */}
-                  <div className="p-3 space-y-1.5">
-                    {config.section_order
-                      .filter(id => !config.hidden_sections.includes(id))
-                      .slice(0, 5)
-                      .map(id => {
-                        const s = ALL_SECTIONS.find(x => x.id === id);
-                        return s ? (
-                          <div key={id} className={`h-6 rounded-md flex items-center px-2 gap-1.5 ${config.dark_mode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: config.theme_color }} />
-                            <span className={`text-[8px] font-semibold ${config.dark_mode ? 'text-gray-400' : 'text-gray-500'}`}>{s.label}</span>
-                          </div>
-                        ) : null;
-                      })}
-                    <div className="h-8 rounded-md flex items-center justify-center text-[8px] font-bold text-white mt-2"
-                      style={{ backgroundColor: config.theme_color }}>
-                      Book Now
-                    </div>
+                  </Editable>
+                </div>
+
+                {/* Add cover button when empty */}
+                {!config.cover_url && config.hero_style === 'cover' && (
+                  <button onClick={() => coverRef.current?.click()}
+                    className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 bg-black/40 hover:bg-black/60 text-white text-xs font-semibold rounded-xl transition-colors">
+                    <Upload size={11} /> Add Cover Photo
+                  </button>
+                )}
+              </div>
+
+              {/* About */}
+              {config.show_about && (
+                <div className={`px-6 py-5 border-b ${borderColor}`}>
+                  <Editable label="About Title" value={config.about_title} onChange={v => set('about_title', v)}>
+                    <h2 className={`text-base font-bold mb-2 ${textPrimary}`}>{config.about_title}</h2>
+                  </Editable>
+                  <p className={`text-sm ${textSecondary}`}>Your bio from Settings will appear here.</p>
+                </div>
+              )}
+
+              {/* Services */}
+              {config.show_services && (
+                <div className={`px-6 py-5 border-b ${borderColor}`}>
+                  <Editable label="Services Title" value={config.services_title} onChange={v => set('services_title', v)}>
+                    <h2 className={`text-base font-bold mb-3 ${textPrimary}`}>{config.services_title}</h2>
+                  </Editable>
+                  <div className="space-y-2">
+                    {['Full Detail — $150', 'Ceramic Coating — $800', 'Paint Correction — $400'].map(s => (
+                      <div key={s} className={`flex items-center justify-between p-3 rounded-xl ${bgSection}`}>
+                        <span className={`text-xs font-semibold ${textPrimary}`}>{s}</span>
+                        <div className="px-3 py-1 rounded-lg text-white text-xs font-bold" style={{ backgroundColor: config.theme_color }}>Book</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Gallery */}
+              {config.show_gallery && (
+                <div className={`px-6 py-5 border-b ${borderColor}`}>
+                  <Editable label="Gallery Title" value={config.gallery_title} onChange={v => set('gallery_title', v)}>
+                    <h2 className={`text-base font-bold mb-3 ${textPrimary}`}>{config.gallery_title}</h2>
+                  </Editable>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className={`aspect-square rounded-xl ${bgSection} flex items-center justify-center`}>
+                        <ImageIcon size={16} className={dark ? 'text-white/20' : 'text-gray-300'} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Powered by */}
+              {config.show_powered_by && (
+                <div className="px-6 py-4 text-center">
+                  <span className={`text-xs ${dark ? 'text-white/20' : 'text-gray-300'}`}>Powered by <strong>Detailor</strong></span>
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Help tip */}
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
-            <AlertCircle size={15} className="text-blue-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-blue-800">Changes publish instantly</p>
-              <p className="text-xs text-blue-600 mt-0.5">After saving, your public booking page at <span className="font-mono">{bookingUrl}</span> will reflect the new design for all clients.</p>
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
