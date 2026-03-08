@@ -2,16 +2,38 @@
 
 @theme {
   /* Vercel Palette: Black, White, and subtle Slates */
-  --color-brand: #000000; /* Vercel uses Black as the primary action color */
+  --color-brand: #000000;
   --color-brand-hover: #444444;
-  --color-success: #0070f3; /* The classic Vercel Blue for confirmed status */
+  --color-success: #0070f3;
   
   /* Modern Typography Tweak */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   
   /* Custom Utilities for that "Vercel" feel */
-  --tracking-tightest: -0.04em;
-  --radius-xl: 8px; /* Vercel uses tighter corners than the default rounded-2xl */
+  --tracking-tightest: -0.06em;
+  --radius-xl: 8px;
+  --radius-button: 2.5rem; /* Studio OS signature rounded corners */
+}
+
+/* --- Studio OS Custom Utilities --- */
+@utility active-press {
+  transition-property: all;
+  transition-duration: 150ms;
+  &:active {
+    transform: scale(0.97);
+    filter: brightness(0.95);
+  }
+}
+
+@utility glass-card {
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+}
+
+@utility tracking-tightest {
+  letter-spacing: var(--tracking-tightest);
 }
 
 :root {
@@ -25,7 +47,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  letter-spacing: -0.02em; /* This is the secret to the Inter look */
+  letter-spacing: -0.02em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -33,4 +55,16 @@ body {
 /* For that thin "hairline" border look Vercel uses */
 .border-subtle {
   border: 1px solid var(--accents-2);
+}
+
+/* Custom Scrollbar for the Minimalist Look */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accents-2);
+  border-radius: 10px;
 }

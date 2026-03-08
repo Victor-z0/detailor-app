@@ -45,7 +45,8 @@ export default function CustomerPortal({ params }: PageProps) {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    window.location.reload(); // Hard reset for vault security
+    // Redirects to the storefront instead of the old /book route
+    window.location.href = `/${slug}`; 
   };
 
   if (loading) return (
@@ -123,7 +124,7 @@ export default function CustomerPortal({ params }: PageProps) {
       </main>
 
       {/* FLOATING HUD NAV */}
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-white border border-gray-100 px-12 py-6 rounded-[3rem] flex items-center gap-16 shadow-2xl z-50 animate-in slide-in-from-bottom-10 duration-1000">
+      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-md border border-gray-100 px-12 py-6 rounded-[3rem] flex items-center gap-16 shadow-2xl z-50 animate-in slide-in-from-bottom-10 duration-1000">
         <button 
           onClick={() => setView('history')}
           className={`flex flex-col items-center gap-2 transition-all active:scale-90 ${view === 'history' ? 'text-black opacity-100' : 'text-gray-200 opacity-40 hover:opacity-60'}`}
@@ -155,7 +156,7 @@ function LoginView({ businessSlug }: { businessSlug: string }) {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({ 
         email,
-        options: { emailRedirectTo: `${window.location.origin}/book/${businessSlug}/portal` }
+        options: { emailRedirectTo: `${window.location.origin}/${businessSlug}/portal` }
     });
     setLoading(false);
     if (!error) setSent(true);
@@ -212,7 +213,8 @@ function BookingFlow({ slug }: { slug: string }) {
               <h3 className="text-4xl font-black italic lowercase tracking-tightest leading-none">Initiate new session?</h3>
             </div>
             <button 
-                onClick={() => window.location.href = `/book/${slug}`}
+                // Redirects directly to the consolidated storefront URL
+                onClick={() => window.location.href = `/${slug}`}
                 className="w-full py-11 bg-black text-white rounded-[3rem] font-black uppercase text-[11px] tracking-[0.5em] shadow-2xl flex items-center justify-center gap-6 hover:scale-[1.02] active:scale-95 transition-all group"
             >
                 Secure Slot <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
