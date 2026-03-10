@@ -116,7 +116,7 @@ export default function PageDesignerPage() {
   const [saving,    setSaving]   = useState(false);
   const [saved,     setSaved]    = useState(false);
   const [error,     setError]    = useState('');
-  const [device,    setDevice]   = useState<'desktop' | 'mobile'>('desktop');
+  const [device,    setDevice]   = useState<'desktop' | 'mobile' | 'controls'>('controls');
   const [uploading, setUploading] = useState<'logo' | 'cover' | null>(null);
   const logoRef  = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
@@ -240,10 +240,24 @@ export default function PageDesignerPage() {
         </div>
       )}
 
+      {/* Mobile tab toggle between controls/preview */}
+      <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 mb-4 lg:hidden w-fit">
+        <button onClick={() => setDevice('controls' as any)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+          style={{ backgroundColor: device === 'controls' ? '#fff' : 'transparent', color: device === 'controls' ? '#111827' : '#9ca3af', boxShadow: device === 'controls' ? '0 1px 2px rgba(0,0,0,.1)' : 'none' }}>
+          Controls
+        </button>
+        <button onClick={() => setDevice('mobile')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+          style={{ backgroundColor: device === 'mobile' ? '#fff' : 'transparent', color: device === 'mobile' ? '#111827' : '#9ca3af', boxShadow: device === 'mobile' ? '0 1px 2px rgba(0,0,0,.1)' : 'none' }}>
+          Preview
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
 
         {/* ─── LEFT: Controls ─── */}
-        <div className="space-y-4 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:pr-1">
+        <div className={`space-y-4 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:pr-1 ${device === 'mobile' ? 'hidden lg:block' : ''}`}>
 
           {/* Branding */}
           <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
@@ -393,7 +407,7 @@ export default function PageDesignerPage() {
         </div>
 
         {/* ─── RIGHT: Preview ─── */}
-        <div className="flex flex-col">
+        <div className={`flex flex-col ${device === 'controls' ? 'hidden lg:flex' : ''}`}>
           <div className="flex items-center gap-2 mb-4">
             <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
               <button onClick={() => setDevice('desktop')}

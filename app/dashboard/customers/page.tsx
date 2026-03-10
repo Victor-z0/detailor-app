@@ -50,9 +50,9 @@ export default function CustomersPage() {
   }
 
   const getTier = (spent: number) => {
-    if (spent > 1500) return { label: 'VIP',     cls: 'bg-violet-50 text-violet-600 border border-violet-100', icon: <Shield size={10} /> };
-    if (spent > 500)  return { label: 'Regular', cls: 'bg-blue-50 text-blue-600 border border-blue-100',       icon: <Star   size={10} /> };
-    return              { label: 'New',     cls: 'bg-emerald-50 text-emerald-600 border border-emerald-100', icon: <Zap    size={10} /> };
+    if (spent > 1500) return { label: 'VIP',     cls: 'bg-violet-50 text-violet-600 border border-violet-100', icon: <Shield  size={10} /> };
+    if (spent > 500)  return { label: 'Regular', cls: 'bg-blue-50   text-blue-600   border border-blue-100',   icon: <Star    size={10} /> };
+    return              { label: 'New',     cls: 'bg-emerald-50 text-emerald-600 border border-emerald-100', icon: <Zap     size={10} /> };
   };
 
   const filtered = customers.filter(c =>
@@ -77,19 +77,22 @@ export default function CustomersPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
+
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Customers</h1>
           <p className="text-sm text-gray-400 mt-0.5">{customers.length} total clients</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Clients', value: customers.length,                                                             icon: <Users      size={16} className="text-blue-600"   />, bg: 'bg-blue-50'   },
-          { label: 'VIP Clients',   value: vipCount,                                                                     icon: <Shield     size={16} className="text-violet-600" />, bg: 'bg-violet-50' },
-          { label: 'Total Revenue', value: `$${totalRevenue.toLocaleString()}`,                                          icon: <DollarSign size={16} className="text-emerald-600"/>, bg: 'bg-emerald-50' },
-          { label: 'Avg. Spent',    value: customers.length ? `$${Math.round(totalRevenue / customers.length)}` : '$0', icon: <TrendingUp size={16} className="text-orange-500" />, bg: 'bg-orange-50'  },
+          { label: 'Total Clients', value: customers.length,                                                                icon: <Users      size={16} className="text-blue-600"   />, bg: 'bg-blue-50'   },
+          { label: 'VIP Clients',   value: vipCount,                                                                        icon: <Shield     size={16} className="text-violet-600" />, bg: 'bg-violet-50' },
+          { label: 'Total Revenue', value: `$${totalRevenue.toLocaleString()}`,                                             icon: <DollarSign size={16} className="text-emerald-600"/>, bg: 'bg-emerald-50' },
+          { label: 'Avg. Spent',    value: customers.length ? `$${Math.round(totalRevenue / customers.length)}` : '$0',    icon: <TrendingUp size={16} className="text-orange-500" />, bg: 'bg-orange-50'  },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
             <div className={`w-8 h-8 ${s.bg} rounded-lg flex items-center justify-center mb-3`}>{s.icon}</div>
@@ -99,6 +102,7 @@ export default function CustomersPage() {
         ))}
       </div>
 
+      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={15} />
         <input type="text" placeholder="Search by name, phone, or email..." value={searchTerm}
@@ -106,6 +110,7 @@ export default function CustomersPage() {
           className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" />
       </div>
 
+      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map(client => {
           const tier = getTier(client.total_spent);
@@ -130,11 +135,13 @@ export default function CustomersPage() {
                   <p className="text-[10px] text-gray-300">total spent</p>
                 </div>
               </div>
+
               <div className="space-y-1.5 mb-4">
                 {client.customer_phone && <div className="flex items-center gap-2 text-xs text-gray-400"><Phone size={11} />{client.customer_phone}</div>}
                 {client.customer_email && <div className="flex items-center gap-2 text-xs text-gray-400"><Mail  size={11} />{client.customer_email}</div>}
                 {client.vehicles?.[0]  && <div className="flex items-center gap-2 text-xs text-gray-400"><Car   size={11} />{client.vehicles[0]}</div>}
               </div>
+
               <div className="flex items-center justify-between pt-3 border-t border-gray-50">
                 <div className="flex gap-4">
                   <div>
@@ -153,6 +160,7 @@ export default function CustomersPage() {
             </div>
           );
         })}
+
         {filtered.length === 0 && (
           <div className="col-span-full py-20 text-center bg-white rounded-xl border border-gray-100">
             <Users size={28} className="text-gray-200 mx-auto mb-3" />
@@ -161,14 +169,21 @@ export default function CustomersPage() {
         )}
       </div>
 
+      {/* ── PROFILE DRAWER ── */}
       {selected && (
         <div className="fixed inset-0 z-[100] flex justify-end">
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setSelected(null)} />
           <div className="relative w-full max-w-md bg-white h-full shadow-xl flex flex-col overflow-y-auto">
+
+            {/* Drawer header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 sticky top-0 bg-white z-10">
               <h3 className="font-bold text-gray-900">Client Profile</h3>
-              <button onClick={() => setSelected(null)} className="p-2 hover:bg-gray-100 rounded-lg"><X size={16} className="text-gray-400" /></button>
+              <button onClick={() => setSelected(null)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X size={16} className="text-gray-400" />
+              </button>
             </div>
+
+            {/* Identity */}
             <div className="p-6 border-b border-gray-50">
               <div className="flex items-center gap-4 mb-5">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-2xl font-bold">
@@ -181,7 +196,9 @@ export default function CustomersPage() {
                   </span>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-3 mb-5">
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
                 {[
                   { l: 'Total Spent', v: `$${selected.total_spent.toLocaleString()}` },
                   { l: 'Visits',      v: selected.visit_count },
@@ -193,29 +210,53 @@ export default function CustomersPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Contact */}
               <div className="space-y-2">
-                {selected.customer_phone && <a href={`tel:${selected.customer_phone}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-700 hover:bg-blue-50 transition-colors"><Phone size={14} className="text-gray-400" />{selected.customer_phone}</a>}
-                {selected.customer_email && <a href={`mailto:${selected.customer_email}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-700 hover:bg-blue-50 transition-colors"><Mail size={14} className="text-gray-400" />{selected.customer_email}</a>}
+                {selected.customer_phone && (
+                  <a href={`tel:${selected.customer_phone}`}
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-700 hover:bg-blue-50 transition-colors">
+                    <Phone size={14} className="text-gray-400" />{selected.customer_phone}
+                  </a>
+                )}
+                {selected.customer_email && (
+                  <a href={`mailto:${selected.customer_email}`}
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-700 hover:bg-blue-50 transition-colors">
+                    <Mail size={14} className="text-gray-400" />{selected.customer_email}
+                  </a>
+                )}
               </div>
             </div>
-            <div className="px-6 py-4 border-b border-gray-50 grid grid-cols-2 gap-3">
-              <button onClick={() => router.push('/dashboard/messages')} className="flex items-center justify-center gap-2 py-2.5 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 text-gray-700 text-xs font-semibold rounded-xl transition-colors">
+
+            {/* Quick actions */}
+            <div className="px-6 py-4 border-b border-gray-50 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={() => router.push('/dashboard/messages')}
+                className="flex items-center justify-center gap-2 py-2.5 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 text-gray-700 text-xs font-semibold rounded-xl transition-colors">
                 <MessageSquare size={13} /> Message
               </button>
-              <button onClick={() => router.push('/dashboard/appointments?new=1')} className="flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-colors">
+              <button
+                onClick={() => router.push('/dashboard/appointments?new=1')}
+                className="flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-colors">
                 <Plus size={13} /> Book Again
               </button>
             </div>
+
+            {/* Vehicles */}
             {selected.vehicles?.length > 0 && (
               <div className="p-6 border-b border-gray-50">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Vehicles</h4>
                 <div className="space-y-2">
                   {selected.vehicles.map((v: string, i: number) => (
-                    <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-700"><Car size={14} className="text-gray-400" />{v}</div>
+                    <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-700">
+                      <Car size={14} className="text-gray-400" /> {v}
+                    </div>
                   ))}
                 </div>
               </div>
             )}
+
+            {/* Appointment history */}
             <div className="p-6">
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Appointment History</h4>
               <div className="space-y-3">
@@ -225,16 +266,25 @@ export default function CustomersPage() {
                     <div key={apt.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                       <div>
                         <p className="text-sm font-semibold text-gray-800">{apt.service_type || apt.service_name}</p>
-                        <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5"><Calendar size={10} />{new Date(apt.scheduled_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                        <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                          <Calendar size={10} />
+                          {new Date(apt.scheduled_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold text-gray-900">${apt.total_price}</p>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${apt.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' : apt.status === 'Cancelled' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-600'}`}>{apt.status}</span>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          apt.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                          apt.status === 'Cancelled' ? 'bg-red-50 text-red-500' :
+                          'bg-blue-50 text-blue-600'}`}>
+                          {apt.status}
+                        </span>
                       </div>
                     </div>
                   ))}
               </div>
             </div>
+
           </div>
         </div>
       )}

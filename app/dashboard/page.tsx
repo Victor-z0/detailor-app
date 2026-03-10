@@ -68,7 +68,7 @@ export default function DashboardPage() {
       {/* WELCOME HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Good morning 👋</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Good morning 👋</h1>
           <p className="text-gray-500 text-sm mt-1">Here's what's happening with <span className="font-semibold text-gray-700">{businessName}</span> today.</p>
         </div>
         <button
@@ -81,7 +81,7 @@ export default function DashboardPage() {
       </div>
 
       {/* STAT CARDS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Revenue" value={`$${revenue.toLocaleString()}`} change="+12%" positive icon={<DollarSign size={18} className="text-blue-600" />} bg="bg-blue-50" />
         <StatCard label="Active Jobs" value={activeJobs.length.toString()} change="This week" icon={<Car size={18} className="text-violet-600" />} bg="bg-violet-50" />
         <StatCard label="Today's Jobs" value={todayJobs.length.toString()} change="Scheduled" icon={<Calendar size={18} className="text-emerald-600" />} bg="bg-emerald-50" />
@@ -92,7 +92,7 @@ export default function DashboardPage() {
 
         {/* ACTIVE JOBS */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
             <div>
               <h2 className="text-base font-semibold text-gray-900">Active Jobs</h2>
               <p className="text-xs text-gray-400 mt-0.5">{activeJobs.length} jobs in progress</p>
@@ -113,7 +113,7 @@ export default function DashboardPage() {
             ) : (
               activeJobs.slice(0, 5).map((job) => (
                 <button key={job.id} onClick={() => { setSelectedJob(job); setIsDrawerOpen(true); }}
-                  className="w-full flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors text-left group">
+                  className="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors text-left group">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                     {job.customer_name?.charAt(0).toUpperCase()}
                   </div>
@@ -186,7 +186,7 @@ export default function DashboardPage() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <a href={`tel:${selectedJob.customer_phone}`} className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition-colors group">
                   <Phone size={20} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
                   <span className="text-xs font-medium text-gray-600 group-hover:text-blue-600">Call Client</span>

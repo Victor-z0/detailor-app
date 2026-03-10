@@ -104,7 +104,7 @@ export default function AppointmentsPage() {
       {/* HEADER */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Appointments</h1>
           <p className="text-sm text-gray-400 mt-0.5">{appointments.length} total</p>
         </div>
         <button onClick={openNew} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
@@ -144,23 +144,21 @@ export default function AppointmentsPage() {
             </div>
           ) : filtered.map(apt => (
             <div key={apt.id} onClick={() => setSelected(apt)}
-              className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_80px] gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors cursor-pointer items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                  {apt.customer_name?.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">{apt.customer_name}</p>
-                  <p className="text-xs text-gray-400 flex items-center gap-1"><Car size={9} />{apt.vehicle_info || apt.vehicle_make_model || '—'}</p>
-                </div>
+              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 transition-colors cursor-pointer">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                {apt.customer_name?.charAt(0).toUpperCase()}
               </div>
-              <p className="text-sm text-gray-700">{apt.service_type || apt.service_name || '—'}</p>
-              <p className="text-sm text-gray-600">{new Date(apt.scheduled_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}<br /><span className="text-xs text-gray-400">{new Date(apt.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></p>
-              <p className="text-sm font-bold text-gray-900">${apt.total_price || '0'}</p>
-              <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-semibold w-fit ${STATUS_COLORS[apt.status] || 'bg-gray-50 text-gray-500'}`}>{apt.status}</span>
-              <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                <button onClick={() => openEdit(apt)} className="p-2 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={13} className="text-gray-400 hover:text-blue-600" /></button>
-                <button onClick={() => handleDelete(apt.id)} className="p-2 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={13} className="text-gray-400 hover:text-red-500" /></button>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 truncate">{apt.customer_name}</p>
+                <p className="text-xs text-gray-400 truncate">{apt.service_type || apt.service_name || '—'} · {apt.vehicle_info || '—'}</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-xs font-bold text-gray-900">{new Date(apt.scheduled_time).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</p>
+                <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold mt-0.5 ${STATUS_COLORS[apt.status] || 'bg-gray-50 text-gray-500'}`}>{apt.status}</span>
+              </div>
+              <div className="flex gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                <button onClick={() => openEdit(apt)} className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={13} className="text-gray-300 hover:text-blue-600" /></button>
+                <button onClick={() => handleDelete(apt.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={13} className="text-gray-300 hover:text-red-500" /></button>
               </div>
             </div>
           ))}
@@ -176,7 +174,7 @@ export default function AppointmentsPage() {
               <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X size={16} className="text-gray-400" /></button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-1.5">
                   <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Customer Name</label>
                   <input required value={form.customer_name} onChange={e => setForm((f: any) => ({ ...f, customer_name: e.target.value }))} className="w-full px-3 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />

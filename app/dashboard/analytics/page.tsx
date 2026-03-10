@@ -173,10 +173,9 @@ export default function AnalyticsPage() {
   }
 
   const rangeLabel = () => {
-    if (rangeMode.startsWith('Q')) return `${rangeMode} ${new Date().getFullYear()}`;
     if (rangeMode === 'all') return 'All Time';
     if (rangeMode === 'custom') return customStart && customEnd ? `${customStart} – ${customEnd}` : 'Custom Range';
-    return { '7d': 'Last 7 Days', '30d': 'Last 30 Days', '90d': 'Last 90 Days', 'Q1': '', 'Q2': '', 'Q3': '', 'Q4': '' }[rangeMode] ?? rangeMode;
+    return { '7d': 'Last 7 Days', '30d': 'Last 30 Days', '90d': 'Last 90 Days', 'Q1': `Q1 ${new Date().getFullYear()}`, 'Q2': `Q2 ${new Date().getFullYear()}`, 'Q3': `Q3 ${new Date().getFullYear()}`, 'Q4': `Q4 ${new Date().getFullYear()}` }[rangeMode] ?? rangeMode;
   };
 
   const Trend = ({ p }: { p: number | null }) => {
@@ -198,17 +197,17 @@ export default function AnalyticsPage() {
     <div className="max-w-6xl mx-auto space-y-6 pb-10">
 
       {/* HEADER */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Analytics</h1>
           <p className="text-sm text-gray-400 mt-0.5">{rangeLabel()}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
 
-          {/* Quarter buttons */}
+          {/* Quarter buttons - hidden on xs, shown sm+ */}
           {(['Q1','Q2','Q3','Q4'] as const).map(q => (
             <button key={q} onClick={() => setRangeMode(q)}
-              className={`px-3 py-2 text-xs font-bold rounded-xl transition-colors border ${rangeMode === q ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'}`}>
+              className={`hidden sm:block px-3 py-2 text-xs font-bold rounded-xl transition-colors border ${rangeMode === q ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'}`}>
               {q}
             </button>
           ))}
@@ -216,10 +215,10 @@ export default function AnalyticsPage() {
           {/* Range dropdown */}
           <div className="relative">
             <button onClick={() => setShowPicker(p => !p)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-xl text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors">
-              <Calendar size={14} />
+              className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-100 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors">
+              <Calendar size={13} />
               {!['Q1','Q2','Q3','Q4'].includes(rangeMode) ? rangeLabel() : 'Range'}
-              <ChevronDown size={13} />
+              <ChevronDown size={12} />
             </button>
             {showPicker && (
               <div className="absolute right-0 top-11 bg-white border border-gray-100 rounded-xl shadow-lg z-20 py-1 min-w-[160px]">
@@ -245,13 +244,13 @@ export default function AnalyticsPage() {
           {/* Export */}
           <button onClick={exportCSV}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-xl text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors">
-            <Download size={14} /> Export CSV
+            <Download size={13} /> <span className="hidden sm:inline">Export CSV</span>
           </button>
         </div>
       </div>
 
       {/* STAT CARDS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Total Revenue',    value: `$${totalRevenue.toLocaleString()}`,  change: revPct, icon: <DollarSign size={18} className="text-blue-600"   />, bg: 'bg-blue-50'   },
           { label: 'Total Jobs',       value: totalJobs,                             change: jobPct, icon: <Calendar  size={18} className="text-violet-600" />, bg: 'bg-violet-50' },
@@ -270,7 +269,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* SECONDARY METRICS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Completion Rate', value: `${completionRate}%`,   icon: <Target    size={16} className="text-emerald-600"/>, bg: 'bg-emerald-50', sub: `${completed.length} of ${totalJobs} jobs` },
           { label: 'Cancellation Rate',value: `${cancelRate}%`,      icon: <BarChart2 size={16} className="text-red-500"    />, bg: 'bg-red-50',     sub: `${filtered.filter(a=>a.status==='Cancelled').length} cancelled` },
@@ -424,7 +423,7 @@ export default function AnalyticsPage() {
           {filtered.length === 0
             ? <div className="py-12 text-center text-sm text-gray-300">No jobs in this period</div>
             : [...filtered].sort((a,b) => new Date(b.scheduled_time).getTime() - new Date(a.scheduled_time).getTime()).slice(0,8).map(apt => (
-              <div key={apt.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
+              <div key={apt.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                   {apt.customer_name?.charAt(0).toUpperCase()}
                 </div>

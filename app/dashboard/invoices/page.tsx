@@ -228,66 +228,61 @@ export default function InvoicesPage() {
           const s = STATUS_CONFIG[inv.status];
           const Icon = s.icon;
           return (
-            <div key={inv.id}
-              className={`grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_100px_100px_120px] gap-2 sm:gap-4 px-5 py-4 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors ${i % 2 === 0 ? '' : 'bg-gray-50/20'}`}>
-              {/* Invoice # */}
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <div key={inv.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+              {/* Mobile card */}
+              <div className="sm:hidden px-4 py-3 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <FileText size={13} className="text-blue-500" />
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">{inv.invoice_num}</p>
-                  <p className="text-xs text-gray-400">{inv.created_at}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-bold text-gray-900">{inv.invoice_num} · {inv.client_name}</p>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${s.bg} ${s.color}`}>
+                      <Icon size={9} /> {s.label}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 truncate mt-0.5">{inv.service}</p>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <p className="text-sm font-bold text-gray-900">{currency}{inv.amount}</p>
+                    {inv.deposit > 0 && (
+                      <p className={`text-xs ${inv.deposit_paid ? 'text-emerald-500' : 'text-amber-500'}`}>
+                        Dep: {currency}{inv.deposit} {inv.deposit_paid ? '✓' : ''}
+                      </p>
+                    )}
+                    {inv.due_date && <p className="text-xs text-gray-400 ml-auto">Due {inv.due_date}</p>}
+                  </div>
+                </div>
+                <div className="relative group flex-shrink-0">
+                  <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><MoreHorizontal size={14} /></button>
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-20 py-1 w-36 hidden group-hover:block">
+                    {inv.status === 'draft' && <button onClick={() => handleStatusChange(inv.id, 'sent')} className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50"><Send size={12} /> Send Invoice</button>}
+                    {inv.status === 'sent'  && <button onClick={() => handleStatusChange(inv.id, 'paid')} className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-emerald-600 hover:bg-emerald-50"><CheckCircle2 size={12} /> Mark Paid</button>}
+                    <button onClick={() => handleStatusChange(inv.id, 'cancelled')} className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-50"><Trash2 size={12} /> Cancel</button>
+                  </div>
                 </div>
               </div>
-              {/* Client */}
-              <div className="sm:flex sm:flex-col sm:justify-center">
-                <p className="text-sm font-semibold text-gray-700">{inv.client_name}</p>
-                <p className="text-xs text-gray-400">{inv.client_email}</p>
-              </div>
-              {/* Service */}
-              <div className="sm:flex sm:items-center">
+              {/* Desktop row */}
+              <div className="hidden sm:grid grid-cols-[1fr_1fr_1fr_100px_100px_120px] gap-4 px-5 py-4 items-center">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0"><FileText size={13} className="text-blue-500" /></div>
+                  <div><p className="text-sm font-bold text-gray-900">{inv.invoice_num}</p><p className="text-xs text-gray-400">{inv.created_at}</p></div>
+                </div>
+                <div><p className="text-sm font-semibold text-gray-700">{inv.client_name}</p><p className="text-xs text-gray-400">{inv.client_email}</p></div>
                 <p className="text-sm text-gray-600">{inv.service}</p>
-              </div>
-              {/* Amount */}
-              <div className="sm:flex sm:flex-col sm:justify-center">
-                <p className="text-sm font-bold text-gray-900">{currency}{inv.amount}</p>
-                {inv.deposit > 0 && (
-                  <p className={`text-xs ${inv.deposit_paid ? 'text-emerald-500' : 'text-amber-500'}`}>
-                    Dep: {currency}{inv.deposit} {inv.deposit_paid ? '✓' : '(unpaid)'}
-                  </p>
-                )}
-              </div>
-              {/* Due date */}
-              <div className="sm:flex sm:items-center">
+                <div>
+                  <p className="text-sm font-bold text-gray-900">{currency}{inv.amount}</p>
+                  {inv.deposit > 0 && <p className={`text-xs ${inv.deposit_paid ? 'text-emerald-500' : 'text-amber-500'}`}>Dep: {currency}{inv.deposit} {inv.deposit_paid ? '✓' : ''}</p>}
+                </div>
                 <p className="text-sm text-gray-500">{inv.due_date || '—'}</p>
-              </div>
-              {/* Status + actions */}
-              <div className="flex items-center gap-2">
-                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${s.bg} ${s.color}`}>
-                  <Icon size={10} /> {s.label}
-                </span>
-                <div className="relative group ml-auto">
-                  <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors">
-                    <MoreHorizontal size={14} />
-                  </button>
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-20 py-1 w-36 hidden group-hover:block">
-                    {inv.status === 'draft' && (
-                      <button onClick={() => handleStatusChange(inv.id, 'sent')}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50 transition-colors">
-                        <Send size={12} /> Send Invoice
-                      </button>
-                    )}
-                    {inv.status === 'sent' && (
-                      <button onClick={() => handleStatusChange(inv.id, 'paid')}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 transition-colors">
-                        <CheckCircle2 size={12} /> Mark Paid
-                      </button>
-                    )}
-                    <button onClick={() => handleStatusChange(inv.id, 'cancelled')}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-50 transition-colors">
-                      <Trash2 size={12} /> Cancel
-                    </button>
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${s.bg} ${s.color}`}><Icon size={10} /> {s.label}</span>
+                  <div className="relative group ml-auto">
+                    <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><MoreHorizontal size={14} /></button>
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-20 py-1 w-36 hidden group-hover:block">
+                      {inv.status === 'draft' && <button onClick={() => handleStatusChange(inv.id, 'sent')} className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50"><Send size={12} /> Send Invoice</button>}
+                      {inv.status === 'sent'  && <button onClick={() => handleStatusChange(inv.id, 'paid')} className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-emerald-600 hover:bg-emerald-50"><CheckCircle2 size={12} /> Mark Paid</button>}
+                      <button onClick={() => handleStatusChange(inv.id, 'cancelled')} className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-50"><Trash2 size={12} /> Cancel</button>
+                    </div>
                   </div>
                 </div>
               </div>

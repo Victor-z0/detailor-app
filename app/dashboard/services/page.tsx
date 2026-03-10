@@ -89,7 +89,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <p className="text-2xl font-black text-blue-600">${svc.price}</p>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <button onClick={() => openEdit(svc)} className="p-2 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={14} className="text-gray-400 hover:text-blue-600" /></button>
                     <button onClick={() => handleDelete(svc.id)} className="p-2 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={14} className="text-gray-400 hover:text-red-500" /></button>
                   </div>
@@ -97,15 +97,18 @@ export default function ServicesPage() {
               </div>
             </div>
           ))}
+
+          {/* ADD MORE */}
           <button onClick={openNew} className="w-full py-4 border-2 border-dashed border-gray-200 rounded-2xl text-sm font-semibold text-gray-400 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50/20 transition-all flex items-center justify-center gap-2">
             <Plus size={16} /> Add another service
           </button>
         </div>
       )}
 
+      {/* MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <h3 className="font-bold text-gray-900">{editing ? 'Edit Service' : 'New Service'}</h3>
               <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X size={16} className="text-gray-400" /></button>

@@ -298,7 +298,7 @@ export default function Storefront({ params }: Props) {
 
           {/* SERVICES */}
           {services.length > 0 && (
-            <section className="py-24 px-6 bg-gray-50">
+            <section className="py-16 px-4 sm:px-6 bg-gray-50">
               <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
                   <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter mb-3">the protocol.</h2>
@@ -330,7 +330,7 @@ export default function Storefront({ params }: Props) {
 
           {/* GALLERY */}
           {gallery.length > 0 && (
-            <section className="py-24 px-6">
+            <section className="py-16 px-4 sm:px-6">
               <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-12">
                   <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter mb-3">the work.</h2>
@@ -350,7 +350,7 @@ export default function Storefront({ params }: Props) {
 
           {/* CONTACT / HOURS */}
           {(profile?.phone || profile?.instagram || profile?.availability_json) && (
-            <section className="py-16 px-6 bg-gray-50">
+            <section className="py-12 px-4 sm:px-6 bg-gray-50">
               <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm">
                   <h3 className="font-black italic text-lg mb-5">get in touch.</h3>
@@ -423,7 +423,7 @@ export default function Storefront({ params }: Props) {
 
       {/* ═══════════════════ BOOKING ENGINE ═══════════════════ */}
       {view === 'booking' && (
-        <main className="pt-24 pb-24 px-6 min-h-screen">
+        <main className="pt-20 pb-24 px-4 sm:px-6 min-h-screen">
           <div className="max-w-xl mx-auto">
             <button onClick={() => setView('landing')} className="mb-10 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-black transition-colors">
               <ChevronLeft size={14} /> Return to Storefront
@@ -621,20 +621,20 @@ export default function Storefront({ params }: Props) {
       {/* ═══════════════════ CLIENT VAULT / PORTAL ═══════════════════ */}
       {view === 'portal' && (
         <main className="min-h-screen bg-[#FDFDFD] pt-20 pb-20 selection:bg-black selection:text-white">
-          <div className="max-w-5xl mx-auto px-6 pt-12">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-12">
 
             {/* Vault header */}
-            <div className="flex justify-between items-start mb-16">
+            <div className="flex justify-between items-start mb-8 sm:mb-16">
               <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 italic">client_member_portal</span>
+                <div className="flex items-center gap-2 mb-2 sm:mb-4">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] text-gray-400 italic">client_member_portal</span>
                 </div>
-                <h1 className="text-5xl md:text-6xl font-black italic tracking-tighter leading-[0.9]">The Vault.</h1>
-                <p className="text-sm text-gray-400 mt-3 font-medium">{profile?.business_name}</p>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black italic tracking-tighter leading-[0.9]">The Vault.</h1>
+                <p className="text-sm text-gray-400 mt-2 sm:mt-3 font-medium">{profile?.business_name}</p>
               </div>
               <button onClick={() => setView('landing')}
-                className="flex items-center gap-2 p-4 bg-gray-50 rounded-2xl hover:bg-black hover:text-white transition-all group text-sm font-bold">
-                <ArrowLeft size={16} /> Back
+                className="flex items-center gap-1.5 sm:gap-2 p-3 sm:p-4 bg-gray-50 rounded-2xl hover:bg-black hover:text-white transition-all group text-sm font-bold">
+                <ArrowLeft size={15} /> <span className="hidden sm:inline">Back</span>
               </button>
             </div>
 
@@ -660,7 +660,7 @@ export default function Storefront({ params }: Props) {
               </div>
             ) : (
               /* Signed in */
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-10">
 
                 {/* Main: appointments */}
                 <div className="lg:col-span-2 space-y-10">
